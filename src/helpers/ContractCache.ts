@@ -42,7 +42,25 @@ export default class ContractCache {
      * @param contract
      */
     public exists (chainId: number, contract: string): boolean {
-        return existsSync(this.resolve(chainId + '_' + contract));
+        const filePath = this.resolve(chainId + '_' + contract);
+
+        const exists = existsSync(filePath);
+
+        if (!exists) {
+            return false;
+        }
+
+        // test to see if we can actually parse it as JSON
+
+        const data = this.retrieve(chainId, contract);
+
+        try {
+            JSON.parse(data);
+
+            return true;
+        } catch {
+            return false;
+        }
     }
 
     private resolve (path?: string): string {
