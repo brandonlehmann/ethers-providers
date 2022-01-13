@@ -21,6 +21,8 @@
 import { ethers } from 'ethers';
 import { IContractTransactionResult } from '../interfaces/contracts/IERC20';
 
+const sleep = async (timeout: number) => new Promise(resolve => setTimeout(resolve, timeout * 1000));
+
 /**
  * Supplies a wrapper that makes it a bit easier for us to set up a factory
  * around an ethers.Contract
@@ -39,7 +41,10 @@ export default class ContractWrapper {
     /**
      * Executes the provided contract transaction method and blocks
      * until the receipt can come back after the required confirmations,
-     * then returns both the contract transaction result and the receipt
+     * then returns both the contract transaction result and the receipt.
+     *
+     * Retries the transaction automatically if underpriced (gas)
+     *
      * @param func
      * @param confirmations
      */
@@ -47,12 +52,30 @@ export default class ContractWrapper {
         func: Promise<ethers.ContractTransaction>,
         confirmations = 1
     ): Promise<IContractTransactionResult> {
-        const tx = await func;
+        const waitForReceipt = async (tx: ethers.ContractTransaction): Promise<ethers.ContractReceipt> => {
+            try {
+                return tx.wait(confirmations);
+            } catch {
+                await sleep(1);
 
-        return {
-            transaction: tx,
-            receipt: await tx.wait(confirmations)
+                return waitForReceipt(tx);
+            }
         };
+
+        try {
+            const tx = await func;
+
+            return {
+                transaction: tx,
+                receipt: await waitForReceipt(tx)
+            };
+        } catch (e: any) {
+            if (e.toString().includes('underpriced')) {
+                return this.execute(func, confirmations);
+            }
+
+            throw e;
+        }
     }
 
     /**

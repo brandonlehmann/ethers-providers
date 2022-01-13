@@ -19,7 +19,7 @@
 // SOFTWARE.
 
 import { describe, it } from 'mocha';
-import { Providers, DAO, ERC20Presets, TimeTracker } from '../src';
+import { Providers, DAO, ERC20Presets, BlockTimeTracker } from '../src';
 import * as assert from 'assert';
 
 describe('Provider Tests', async () => {
@@ -53,10 +53,10 @@ describe('Provider Tests', async () => {
 
             if (provider.network.chainId === 250) {
                 describe('Test Time Tracker', async () => {
-                    let contract: TimeTracker;
+                    let contract: BlockTimeTracker;
 
                     before(async () => {
-                        contract = await provider.load_contract(TimeTracker,
+                        contract = await provider.load_contract(BlockTimeTracker,
                             '0x706e05D2b47cc6B1fb615EE76DD3789d2329E22e');
                     });
 

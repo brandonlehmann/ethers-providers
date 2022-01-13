@@ -28,7 +28,8 @@ import applyMixins from './helpers/Mixins';
 import IDAO from './interfaces/contracts/IDAO';
 import IERC20 from './interfaces/contracts/IERC20';
 import ContractCache from './helpers/ContractCache';
-import TimeTracker from './classes/TimeTracker';
+import BlockTimeTracker from './classes/BlockTimeTracker';
+import ContractWrapper from './classes/ContractWrapper';
 
 export {
     FantomScanProvider,
@@ -46,7 +47,8 @@ export {
     ContractCache,
     Wallet,
     utils,
-    TimeTracker
+    BlockTimeTracker,
+    ContractWrapper
 };
 
 export const Providers = [FantomScanProvider, BinanceScanProvider];

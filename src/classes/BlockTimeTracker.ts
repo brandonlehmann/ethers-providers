@@ -18,22 +18,42 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import { ethers } from 'ethers';
+import { ethers, BigNumber } from 'ethers';
 import ContractWrapper from './ContractWrapper';
 
-export default class TimeTracker extends ContractWrapper {
+export default class BlockTimeTracker extends ContractWrapper {
     constructor (public readonly contract_address: string, public readonly contract_abi: string, public readonly provider: ethers.providers.Provider | ethers.Signer) {
         super(contract_address, contract_abi, provider);
     }
 
-    private async precision (): Promise<number> {
+    private async PRECISION (): Promise<number> {
         return this.contract.PRECISION();
     }
 
-    public async average (): Promise<number> {
-        const decimals = await this.precision();
+    public async average (): Promise<BigNumber> {
+        return this.contract.average();
+    }
 
-        const avg = (await this.contract.average()).toNumber();
+    public async currentBlock (): Promise<BigNumber> {
+        return this.contract.currentBlock();
+    }
+
+    public async currentTimestamp (): Promise<BigNumber> {
+        return this.contract.currentTimestamp();
+    }
+
+    public async startBlockNumber (): Promise<BigNumber> {
+        return this.contract.startBlockNumber();
+    }
+
+    public async startBlockTimestamp (): Promise<BigNumber> {
+        return this.contract.startBlockTimestamp();
+    }
+
+    public async getBlocksPerSecond (): Promise<number> {
+        const decimals = await this.PRECISION();
+
+        const avg = (await this.average()).toNumber();
 
         return (avg / (Math.pow(10, decimals)));
     }
