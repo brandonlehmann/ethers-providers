@@ -30,6 +30,7 @@ import IERC20 from './interfaces/contracts/IERC20';
 import ContractCache from './helpers/ContractCache';
 import BlockTimeTracker from './classes/BlockTimeTracker';
 import ContractWrapper from './classes/ContractWrapper';
+import DAOInformationHelper from './classes/DAOInformationHelper';
 
 export {
     FantomScanProvider,
@@ -48,7 +49,8 @@ export {
     Wallet,
     utils,
     BlockTimeTracker,
-    ContractWrapper
+    ContractWrapper,
+    DAOInformationHelper
 };
 
 export const Providers = [FantomScanProvider, BinanceScanProvider];

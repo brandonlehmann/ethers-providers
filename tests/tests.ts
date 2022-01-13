@@ -19,7 +19,7 @@
 // SOFTWARE.
 
 import { describe, it } from 'mocha';
-import { Providers, DAO, ERC20Presets, BlockTimeTracker } from '../src';
+import { Providers, DAO, ERC20Presets, BlockTimeTracker, DAOInformationHelper } from '../src';
 import * as assert from 'assert';
 
 describe('Provider Tests', async () => {
@@ -63,6 +63,26 @@ describe('Provider Tests', async () => {
                     it('average()', async () => {
                         await contract.average()
                             .catch(() => assert(false));
+                    });
+                });
+
+                describe('Test DAO Information Helper', async () => {
+                    let contract: DAOInformationHelper;
+
+                    before(async () => {
+                        contract = await provider.load_contract(DAOInformationHelper,
+                            '0x260A5367c0e742a1fdE32cDB13973F67c92149Ed');
+                    });
+
+                    it('info()', async () => {
+                        const result = await contract.info(
+                            '0x8b8d40f98a2f14e2dd972b3f2e2a2cc227d1e3be',
+                            '0x8de250c65636ef02a75e4999890c91cecd38d03d',
+                            '0x706e05D2b47cc6B1fb615EE76DD3789d2329E22e',
+                            '0x8b8d40f98a2f14e2dd972b3f2e2a2cc227d1e3be'
+                        );
+
+                        assert(result.stakedDecimals !== 0 && result.blockPrecision !== 0);
                     });
                 });
 

@@ -102,6 +102,8 @@ export default class ProviderHelper extends ethers.providers.EtherscanProvider i
      * @param force_refresh
      */
     public async fetch_contract (contract_address: string, force_refresh = false) {
+        contract_address = contract_address.trim();
+
         if (this.contract_cache.exists(this.network.chainId, contract_address) && !force_refresh) {
             return {
                 address: contract_address,
