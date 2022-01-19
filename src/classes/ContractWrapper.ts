@@ -70,7 +70,7 @@ export default class ContractWrapper {
                 receipt: await waitForReceipt(tx)
             };
         } catch (e: any) {
-            if (e.toString().includes('underpriced')) {
+            if (e.toString().includes('underpriced') || e.toString().includes('nonce has already been used')) {
                 return this.execute(func, confirmations);
             }
 
