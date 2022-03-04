@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Brandon Lehmann <brandonlehmann@gmail.com>
+// Copyright (c) 2021-2022, Brandon Lehmann <brandonlehmann@gmail.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -19,10 +19,9 @@
 // SOFTWARE.
 
 import { ethers } from 'ethers';
-import fetch from 'node-fetch';
-import ContractCache from './ContractCache';
+import fetch from 'cross-fetch';
 import { IScanProvider } from '../interfaces/providers/IScanProvider';
-import ContractWrapper from '../classes/ContractWrapper';
+import * as ls from 'local-storage';
 
 export interface INetwork {
     name: string;
@@ -77,7 +76,6 @@ export const get_network = (
 };
 
 export default class ProviderHelper extends ethers.providers.EtherscanProvider implements IScanProvider {
-    private readonly contract_cache: ContractCache = new ContractCache();
     protected _fullName = '';
     protected _testContract = '';
 
@@ -96,6 +94,16 @@ export default class ProviderHelper extends ethers.providers.EtherscanProvider i
     }
 
     /**
+     * Generates an ID for the contract on the given chain
+     * @param chainId
+     * @param contract_address
+     * @private
+     */
+    private static getContractId (chainId: number, contract_address: string): string {
+        return chainId.toString() + '_' + contract_address.trim();
+    }
+
+    /**
      * Fetches the contract ABI if available
      *
      * @param contract_address
@@ -104,10 +112,18 @@ export default class ProviderHelper extends ethers.providers.EtherscanProvider i
     public async fetch_contract (contract_address: string, force_refresh = false) {
         contract_address = contract_address.trim();
 
-        if (this.contract_cache.exists(this.network.chainId, contract_address) && !force_refresh) {
+        if (!ethers.utils.isAddress(contract_address)) {
+            throw new Error('Not a valid contract address');
+        }
+
+        const id = ProviderHelper.getContractId(this.network.chainId, contract_address);
+
+        const exists = ls.get<string>(id);
+
+        if (exists && exists.length !== 0 && !force_refresh) {
             return {
                 address: contract_address,
-                abi: this.contract_cache.retrieve(this.network.chainId, contract_address)
+                abi: exists
             };
         } else {
             const response = await fetch(
@@ -121,9 +137,9 @@ export default class ProviderHelper extends ethers.providers.EtherscanProvider i
             const body = await response.text();
 
             try {
-                const json: { result: string } = JSON.parse(body);
+                const json: {result: string} = JSON.parse(body);
 
-                this.contract_cache.save(this.network.chainId, contract_address, json.result);
+                ls.set<string>(id, json.result);
 
                 return {
                     address: contract_address,
@@ -138,17 +154,17 @@ export default class ProviderHelper extends ethers.providers.EtherscanProvider i
     /**
      * Fetches and loads the contract into an object we can use
      *
-     * @param ReturnClass
      * @param contract_address
-     * @param args
+     * @param force_refresh
+     * @param provider
      */
-    public async load_contract<Type extends ContractWrapper | ethers.Contract = ethers.Contract> (
-        ReturnClass: new (...args: any[]) => Type,
+    public async load_contract (
         contract_address: string,
-        ...args: any[]
-    ): Promise<Type> {
-        const contract = await this.fetch_contract(contract_address);
+        force_refresh = false,
+        provider: ethers.providers.Provider = this
+    ): Promise<ethers.Contract> {
+        const contract = await this.fetch_contract(contract_address, force_refresh);
 
-        return new ReturnClass(contract_address, contract.abi, this, ...args);
+        return new ethers.Contract(contract_address, contract.abi, provider);
     }
 }

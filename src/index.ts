@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Brandon Lehmann <brandonlehmann@gmail.com>
+// Copyright (c) 2021-2022, Brandon Lehmann <brandonlehmann@gmail.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,37 +20,15 @@
 
 import FantomScanProvider from './providers/FantomScan';
 import BinanceScanProvider from './providers/BinanceScan';
-import { ethers, BigNumber, Wallet, utils } from 'ethers';
+import { ethers, BigNumber } from 'ethers';
 import { IScanProvider } from './interfaces/providers/IScanProvider';
-import * as DAO from './classes/DAO';
-import ERC20, { Extensions as ERC20Extensions, Presets as ERC20Presets } from './classes/ERC20';
-import applyMixins from './helpers/Mixins';
-import IDAO from './interfaces/contracts/IDAO';
-import IERC20 from './interfaces/contracts/IERC20';
-import ContractCache from './helpers/ContractCache';
-import BlockTimeTracker from './classes/BlockTimeTracker';
-import ContractWrapper from './classes/ContractWrapper';
-import DAOInformationHelper from './classes/DAOInformationHelper';
 
 export {
     FantomScanProvider,
     BinanceScanProvider,
     ethers,
     BigNumber,
-    IScanProvider,
-    DAO,
-    ERC20,
-    ERC20Extensions,
-    ERC20Presets,
-    applyMixins,
-    IDAO,
-    IERC20,
-    ContractCache,
-    Wallet,
-    utils,
-    BlockTimeTracker,
-    ContractWrapper,
-    DAOInformationHelper
+    IScanProvider
 };
 
 export const Providers = [FantomScanProvider, BinanceScanProvider];
@@ -60,13 +38,5 @@ export default {
     FantomScanProvider,
     BinanceScanProvider,
     ethers,
-    BigNumber,
-    DAO,
-    ERC20,
-    ERC20Extensions,
-    ERC20Presets,
-    applyMixins,
-    ContractCache,
-    Wallet,
-    utils
+    BigNumber
 };

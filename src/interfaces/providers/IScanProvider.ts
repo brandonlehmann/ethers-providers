@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Brandon Lehmann <brandonlehmann@gmail.com>
+// Copyright (c) 2021-2022, Brandon Lehmann <brandonlehmann@gmail.com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -19,14 +19,14 @@
 // SOFTWARE.
 
 import { ethers } from 'ethers';
-import ContractWrapper from '../../classes/ContractWrapper';
 
 export interface IScanProvider extends ethers.providers.EtherscanProvider {
     fullName: string;
     testContract: string;
     fetch_contract: (contract_address: string, force_refresh: boolean) => Promise<{address: string, abi: string}>;
     load_contract: (
-        returnClass: new (...args: any[]) => any,
         contract_address: string,
-        ...args: any[]) => Promise<ContractWrapper | ethers.Contract>;
+        force_refresh: boolean,
+        provider?: ethers.providers.Provider
+    ) => Promise<ethers.Contract>;
 }
