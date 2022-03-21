@@ -18,6 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+import Contract from '../helpers/Contract';
 import { ethers } from 'ethers';
 import fetch from 'cross-fetch';
 import { IScanProvider } from '../interfaces/providers/IScanProvider';
@@ -109,7 +110,10 @@ export default class ProviderHelper extends ethers.providers.EtherscanProvider i
      * @param contract_address
      * @param force_refresh
      */
-    public async fetch_contract (contract_address: string, force_refresh = false) {
+    public async fetch_contract (
+        contract_address: string,
+        force_refresh = false
+    ): Promise<{address: string, abi: string}> {
         contract_address = contract_address.trim();
 
         if (!ethers.utils.isAddress(contract_address)) {
@@ -162,9 +166,9 @@ export default class ProviderHelper extends ethers.providers.EtherscanProvider i
         contract_address: string,
         force_refresh = false,
         provider: ethers.providers.Provider = this
-    ): Promise<ethers.Contract> {
+    ): Promise<Contract> {
         const contract = await this.fetch_contract(contract_address, force_refresh);
 
-        return new ethers.Contract(contract_address, contract.abi, provider);
+        return new Contract(contract_address, contract.abi, provider);
     }
 }

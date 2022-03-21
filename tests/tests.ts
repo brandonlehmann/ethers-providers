@@ -19,7 +19,7 @@
 // SOFTWARE.
 
 import { describe, it } from 'mocha';
-import { Providers } from '../src';
+import { Providers, Multicall } from '../src';
 import * as assert from 'assert';
 
 describe('Provider Tests', async () => {
@@ -49,6 +49,26 @@ describe('Provider Tests', async () => {
                 const contract = await provider.fetch_contract(provider.testContract, true);
 
                 assert(contract.address === provider.testContract);
+            });
+        });
+
+        describe(provider.fullName + ' Multicall', async () => {
+            let multicall: Multicall;
+
+            before(async () => {
+                multicall = await Multicall.create(provider);
+            });
+
+            it('Test Multicall', async () => {
+                const contract = await provider.load_contract(provider.testContract, false);
+
+                const result = await multicall.multicall([
+                    contract.callMethod('decimals'),
+                    contract.callMethod('name'),
+                    contract.callMethod('balanceOf', '0xf977814e90da44bfa03b6295a0616a897441acec')
+                ]);
+
+                assert(result.length === 3);
             });
         });
     }

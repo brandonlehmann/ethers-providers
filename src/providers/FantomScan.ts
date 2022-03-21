@@ -56,7 +56,7 @@ export default class FantomScanProvider extends ProviderHelper {
 
         this._fullName = 'Fantom Opera';
 
-        this._testContract = '0x04068DA6C83AFCFA0e13ba15A6696662335D5B75';
+        this._testContract = '0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83';
     }
 
     /**

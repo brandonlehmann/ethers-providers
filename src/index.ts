@@ -22,10 +22,14 @@ import FantomScanProvider from './providers/FantomScan';
 import BinanceScanProvider from './providers/BinanceScan';
 import { ethers, BigNumber } from 'ethers';
 import { IScanProvider } from './interfaces/providers/IScanProvider';
+import Multicall from './helpers/Multicall';
+import Contract from './helpers/Contract';
 
 export {
+    Multicall,
     FantomScanProvider,
     BinanceScanProvider,
+    Contract,
     ethers,
     BigNumber,
     IScanProvider
@@ -34,9 +38,11 @@ export {
 export const Providers = [FantomScanProvider, BinanceScanProvider];
 
 export default {
+    Multicall,
     Providers,
     FantomScanProvider,
     BinanceScanProvider,
     ethers,
-    BigNumber
+    BigNumber,
+    Contract
 };

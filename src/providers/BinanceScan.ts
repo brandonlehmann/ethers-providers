@@ -57,7 +57,7 @@ export default class BinanceScanProvider extends ProviderHelper {
 
         this._fullName = 'Binance Smart Chain';
 
-        this._testContract = '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d';
+        this._testContract = '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56';
     }
 
     /**
