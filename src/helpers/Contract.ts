@@ -19,6 +19,7 @@
 // SOFTWARE.
 
 import { ethers } from 'ethers';
+import Multicall from './Multicall';
 
 export interface IContractCall {
     contract: {
@@ -32,12 +33,21 @@ export interface IContractCall {
 
 export default class Contract extends ethers.Contract {
     private _callMethods: Map<string, IContractCall> = new Map<string, IContractCall>();
+    public readonly multicallProvider?: Multicall;
 
     constructor (
         addressOrName: string,
         contractInterface: ethers.ContractInterface,
-        signerOrProvider?: ethers.Signer | ethers.providers.Provider) {
-        super(addressOrName, contractInterface, signerOrProvider);
+        signerOrProvider?: ethers.Signer | ethers.providers.Provider | Multicall) {
+        super(
+            addressOrName,
+            contractInterface,
+            (signerOrProvider instanceof Multicall) ? signerOrProvider.provider : signerOrProvider
+        );
+
+        if (signerOrProvider instanceof Multicall) {
+            this.multicallProvider = signerOrProvider;
+        }
 
         for (const fragment of this.interface.fragments) {
             if (fragment.type !== 'function') {

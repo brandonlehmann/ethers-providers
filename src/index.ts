@@ -23,10 +23,11 @@ import BinanceScanProvider from './providers/BinanceScan';
 import { ethers, BigNumber } from 'ethers';
 import { IScanProvider } from './interfaces/providers/IScanProvider';
 import Multicall from './helpers/Multicall';
-import Contract from './helpers/Contract';
+import Contract, { IContractCall } from './helpers/Contract';
 
 export {
     Multicall,
+    IContractCall,
     FantomScanProvider,
     BinanceScanProvider,
     Contract,

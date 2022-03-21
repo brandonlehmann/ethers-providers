@@ -23,6 +23,7 @@ import { ethers } from 'ethers';
 import fetch from 'cross-fetch';
 import { IScanProvider } from '../interfaces/providers/IScanProvider';
 import * as ls from 'local-storage';
+import Multicall from './Multicall';
 
 export interface INetwork {
     name: string;
@@ -165,7 +166,7 @@ export default class ProviderHelper extends ethers.providers.EtherscanProvider i
     public async load_contract (
         contract_address: string,
         force_refresh = false,
-        provider: ethers.providers.Provider = this
+        provider: ethers.providers.Provider | Multicall = this
     ): Promise<Contract> {
         const contract = await this.fetch_contract(contract_address, force_refresh);
 
