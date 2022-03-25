@@ -19,7 +19,7 @@
 // SOFTWARE.
 
 import { describe, it } from 'mocha';
-import { Providers, Multicall } from '../src';
+import { Providers, Multicall, Contract } from '../src';
 import * as assert from 'assert';
 
 describe('Provider Tests', async () => {
@@ -54,9 +54,15 @@ describe('Provider Tests', async () => {
 
         describe(provider.fullName + ' Multicall', async () => {
             let multicall: Multicall;
+            let testContract: Contract | undefined;
 
             before(async () => {
                 multicall = await Multicall.create(provider);
+
+                if (provider.chainId === 250) {
+                    testContract = await provider.load_contract(
+                        '0x3fAaB499b519fdC5819e3D7ed0C26111904cbc28', false);
+                }
             });
 
             it('Test Multicall', async () => {
@@ -69,6 +75,20 @@ describe('Provider Tests', async () => {
                 ]);
 
                 assert(result.length === 3);
+            });
+
+            it('Test Multicall Specific', async function () {
+                if (!testContract) {
+                    return this.skip();
+                }
+
+                const result = await multicall.multicall([
+                    testContract.callMethod('allPairs', 0),
+                    testContract.callMethod('allPairs', 1),
+                    testContract.callMethod('allPairs', 3)
+                ]);
+
+                assert(result[0] !== result[1] && result[1] !== result[2]);
             });
         });
     }

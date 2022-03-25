@@ -77,6 +77,9 @@ export const get_network = (
     return null;
 };
 
+const sleep = async (timeout: number) =>
+    new Promise(resolve => setTimeout(resolve, timeout * 1000));
+
 export default class ProviderHelper extends ethers.providers.EtherscanProvider implements IScanProvider {
     protected _fullName = '';
     protected _testContract = '';
@@ -142,7 +145,13 @@ export default class ProviderHelper extends ethers.providers.EtherscanProvider i
             const body = await response.text();
 
             try {
-                const json: {result: string} = JSON.parse(body);
+                const json: {result: string, status: string} = JSON.parse(body);
+
+                if (json.status !== '1') {
+                    await sleep(1);
+
+                    return this.fetch_contract(contract_address, force_refresh);
+                }
 
                 ls.set<string>(id, json.result);
 

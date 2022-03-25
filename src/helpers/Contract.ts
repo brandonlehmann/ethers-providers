@@ -82,8 +82,14 @@ export default class Contract extends ethers.Contract {
             throw new Error('Contract method not callable');
         }
 
-        method.params = params;
-
-        return method;
+        return {
+            contract: {
+                address: method.contract.address
+            },
+            name: method.name,
+            inputs: method.inputs,
+            outputs: method.outputs,
+            params: params
+        };
     }
 }

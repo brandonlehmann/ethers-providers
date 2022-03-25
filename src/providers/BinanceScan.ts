@@ -35,6 +35,8 @@ const networks: INetwork[] = [
 ];
 
 export default class BinanceScanProvider extends ProviderHelper {
+    private _chainId: number;
+
     /**
      * Constructs a new instance of the Provider
      *
@@ -55,9 +57,15 @@ export default class BinanceScanProvider extends ProviderHelper {
 
         super(<ethers.providers.Network>standard_network, api_key || default_api_key);
 
+        this._chainId = standard_network?.chainId || 0x38;
+
         this._fullName = 'Binance Smart Chain';
 
         this._testContract = '0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56';
+    }
+
+    public get chainId (): number {
+        return this._chainId;
     }
 
     /**

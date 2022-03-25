@@ -34,6 +34,8 @@ const networks: INetwork[] = [
 ];
 
 export default class FantomScanProvider extends ProviderHelper {
+    private _chainId: number;
+
     /**
      * Constructs a new instance of the Provider
      *
@@ -54,9 +56,15 @@ export default class FantomScanProvider extends ProviderHelper {
 
         super(<ethers.providers.Network>standard_network, api_key || default_api_key);
 
+        this._chainId = standard_network?.chainId || 0xfa;
+
         this._fullName = 'Fantom Opera';
 
         this._testContract = '0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83';
+    }
+
+    public get chainId (): number {
+        return this._chainId;
     }
 
     /**
