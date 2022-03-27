@@ -19,13 +19,14 @@
 // SOFTWARE.
 
 import { ethers } from 'ethers';
-import { IContractCall } from './Contract';
+import Contract, { IContractCall } from './Contract';
 import ABI from '../helpers/ABI';
 import { multicallAddresses, multicallAbi } from './MulticallAddresses';
 import { IScanProvider } from '../interfaces/providers/IScanProvider';
 
 export default class Multicall {
     private readonly multicallAddress: string;
+    private readonly contract: Contract;
 
     protected constructor (
         public readonly provider: ethers.providers.Provider | IScanProvider,
@@ -43,17 +44,29 @@ export default class Multicall {
         } else {
             this.multicallAddress = multicallAddress;
         }
+
+        this.contract = new Contract(this.multicallAddress, multicallAbi, this.provider);
+    }
+
+    /**
+     * Execute the requests contract calls using the multicall contract facility
+     *
+     * @deprecated
+     * @param calls
+     */
+    public async multicall<Type extends any[] = any[]> (
+        calls: IContractCall[]
+    ): Promise<Type> {
+        return this.aggregate(calls);
     }
 
     /**
      * Execute the requests contract calls using the multicall contract facility
      * @param calls
      */
-    public async multicall<Type extends any[] = any[]> (
+    public async aggregate<Type extends any[] = any[]> (
         calls: IContractCall[]
     ): Promise<Type> {
-        const multicall = new ethers.Contract(this.multicallAddress, multicallAbi, this.provider);
-
         const callRequests = calls.map(elem => {
             const callData = ABI.encode(elem.name, elem.inputs, elem.params);
             return {
@@ -62,7 +75,10 @@ export default class Multicall {
             };
         });
 
-        const response = await multicall.aggregate(callRequests);
+        const response = await this.contract.retryCall<{
+            blockNumber: ethers.BigNumber,
+            returnData: string[]
+        }>(this.contract.aggregate, callRequests);
 
         const callCount = calls.length;
 
@@ -77,6 +93,59 @@ export default class Multicall {
         }
 
         return callResult;
+    }
+
+    /**
+     * Get the block hash for the specified block number
+     *
+     * @param blockNumber
+     */
+    public async getBlockHash (blockNumber: ethers.BigNumberish): Promise<string> {
+        return this.contract.retryCall(this.contract.getBlockHash, blockNumber);
+    }
+
+    /**
+     * Returns the current block coinbase address
+     */
+    public async getCurrentBlockCoinbase (): Promise<string> {
+        return this.contract.retryCall(this.contract.getCurrentBlockCoinbase);
+    }
+
+    /**
+     * Return the current block difficulty
+     */
+    public async getCurrentBlockDifficulty (): Promise<ethers.BigNumber> {
+        return this.contract.retryCall(this.contract.getCurrentBlockDifficulty);
+    }
+
+    /**
+     * Return the current block gas limit
+     */
+    public async getCurrentBlockGasLimit (): Promise<ethers.BigNumber> {
+        return this.contract.retryCall(this.contract.getCurrentBlockGasLimit);
+    }
+
+    /**
+     * Return the current block timestamp
+     */
+    public async getCurrentBlockTimestamp (): Promise<ethers.BigNumber> {
+        return this.contract.retryCall(this.contract.getCurrentBlockTimestamp);
+    }
+
+    /**
+     * Return the balance for the specified account
+     *
+     * @param account
+     */
+    public async getEthBalance (account: string): Promise<ethers.BigNumber> {
+        return this.contract.retryCall(this.contract.getEthBalance, account);
+    }
+
+    /**
+     * Returns the last block hash
+     */
+    public async getLastBlockHash (): Promise<string> {
+        return this.contract.retryCall(this.contract.getLastBlockHash);
     }
 
     /**

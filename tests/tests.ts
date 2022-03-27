@@ -19,7 +19,7 @@
 // SOFTWARE.
 
 import { describe, it } from 'mocha';
-import { Providers, Multicall, Contract } from '../src';
+import { Providers, Contract } from '../src';
 import * as assert from 'assert';
 
 describe('Provider Tests', async () => {
@@ -53,26 +53,22 @@ describe('Provider Tests', async () => {
         });
 
         describe(provider.fullName + ' Multicall', async () => {
-            let multicall: Multicall;
             let testContract: Contract | undefined;
 
             before(async () => {
-                multicall = await Multicall.create(provider);
-
                 if (provider.chainId === 250) {
                     testContract = await provider.load_contract(
                         '0x3fAaB499b519fdC5819e3D7ed0C26111904cbc28', false);
                 }
             });
 
-            it('Test Multicall', async () => {
+            it('Test Multicall Chained', async () => {
                 const contract = await provider.load_contract(provider.testContract, false);
 
-                const result = await multicall.multicall([
-                    contract.callMethod('decimals'),
-                    contract.callMethod('name'),
-                    contract.callMethod('balanceOf', '0xf977814e90da44bfa03b6295a0616a897441acec')
-                ]);
+                const result = await contract.call('decimals')
+                    .call('name')
+                    .call('balanceOf', '0xf977814e90da44bfa03b6295a0616a897441acec')
+                    .exec();
 
                 assert(result.length === 3);
             });
@@ -82,11 +78,10 @@ describe('Provider Tests', async () => {
                     return this.skip();
                 }
 
-                const result = await multicall.multicall([
-                    testContract.callMethod('allPairs', 0),
-                    testContract.callMethod('allPairs', 1),
-                    testContract.callMethod('allPairs', 3)
-                ]);
+                const result = await testContract.call('allPairs', 0)
+                    .call('allPairs', 1)
+                    .call('allPairs', 2)
+                    .exec();
 
                 assert(result[0] !== result[1] && result[1] !== result[2]);
             });

@@ -21,6 +21,9 @@
 import { ethers } from 'ethers';
 import Multicall from './Multicall';
 
+const sleep = async (timeout: number) =>
+    new Promise(resolve => setTimeout(resolve, timeout * 1000));
+
 export interface IContractCall {
     contract: {
         address: string;
@@ -31,9 +34,20 @@ export interface IContractCall {
     params: any[];
 }
 
-export default class Contract extends ethers.Contract {
+interface IContract extends ethers.Contract {
+    exec: <Type extends any[] = any[]>() => Promise<Type>;
+    callMethod: (name: string, ...params: any[]) => IContractCall;
+    call: (name: string, ...params: any[]) => IContract;
+}
+
+export default class Contract extends ethers.Contract implements IContract {
     private _callMethods: Map<string, IContractCall> = new Map<string, IContractCall>();
     public readonly multicallProvider?: Multicall;
+    protected _callChain: IContractCall[] = [];
+
+    private readonly _addressOrName: string;
+    private readonly _contractInterface: ethers.ContractInterface;
+    private readonly _signerOrProvider: ethers.Signer | ethers.providers.Provider | Multicall | undefined;
 
     constructor (
         addressOrName: string,
@@ -44,6 +58,10 @@ export default class Contract extends ethers.Contract {
             contractInterface,
             (signerOrProvider instanceof Multicall) ? signerOrProvider.provider : signerOrProvider
         );
+
+        this._addressOrName = addressOrName;
+        this._contractInterface = contractInterface;
+        this._signerOrProvider = signerOrProvider;
 
         if (signerOrProvider instanceof Multicall) {
             this.multicallProvider = signerOrProvider;
@@ -71,7 +89,65 @@ export default class Contract extends ethers.Contract {
     }
 
     /**
-     * Contrauct a contract call that can be utilized as a multicall
+     * Automatically keeps trying the call unless we get a revert exception
+     *
+     * @param func
+     * @param params
+     */
+    public async retryCall<T> (func: (...args: any[]) => Promise<T>, ...params: any[]): Promise<T> {
+        try {
+            return func(...params);
+        } catch (e: any) {
+            if (e.toString().toLowerCase().includes('revert exception')) {
+                throw e;
+            }
+
+            await sleep(1);
+
+            return this.retryCall(func);
+        }
+    }
+
+    /**
+     * Creates a chainable list of contract calls
+     *
+     * @param name
+     * @param params
+     */
+    public call (name: string, ...params: any[]): Contract {
+        const result = new Contract(this._addressOrName, this._contractInterface, this._signerOrProvider);
+
+        result._callChain = this._callChain;
+        result._callChain.push(result.callMethod(name, ...params));
+
+        return result;
+    }
+
+    /**
+     * Executes the chainable list of contract calls
+     *
+     * @param provider
+     */
+    public async exec<Type extends any[] = any[]> (
+        provider?: ethers.Signer | ethers.providers.Provider | Multicall
+    ): Promise<Type> {
+        if (this._callChain.length === 0) {
+            throw new Error('No call chain available');
+        }
+
+        provider = provider || this.multicallProvider;
+
+        if (!provider || (!(provider instanceof Multicall))) {
+            provider = await Multicall.create(this.provider);
+        }
+
+        return provider.aggregate<Type>(this._callChain);
+    }
+
+    /**
+     * Construct a contract call that can be utilized as a multicall
+     *
+     * @deprecated
      * @param name
      * @param params
      */
